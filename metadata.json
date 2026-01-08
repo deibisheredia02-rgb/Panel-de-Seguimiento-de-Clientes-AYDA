@@ -1,0 +1,8 @@
+{
+  "name": "Panel de Seguimiento de Clientes AYDA ",
+  "description": "Enterprise platform for domestic service prospecting and AI-driven sentiment analysis, featuring automated lead generation and auditing.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

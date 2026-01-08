@@ -1,0 +1,59 @@
+
+[
+  {
+    "name": "Sistema Prospección Hiper-Personalizada AYDA",
+    "nodes": [
+      {
+        "parameters": { "rule": { "interval": [ { "field": "minutes", "minutes": 5 } ] } },
+        "name": "Trigger cada 5 min",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [100, 300]
+      },
+      {
+        "parameters": { 
+          "resource": "place", 
+          "operation": "search", 
+          "text": "clínicas dentales o administradoras de edificios" 
+        },
+        "name": "Google Maps API (Extracción Leads)",
+        "type": "n8n-nodes-base.googleMaps",
+        "position": [300, 300]
+      },
+      {
+        "parameters": { 
+          "url": "={{$json.website}}", 
+          "responseFormat": "string" 
+        },
+        "name": "HTTP Request (Scraping Web/Colores Corporativos)",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [500, 300]
+      },
+      {
+        "parameters": { 
+          "model": "gemini-3-flash-preview", 
+          "prompt": "Genera un icebreaker basado en los colores y servicios de esta web: {{$json.data}}",
+          "options": { "temperature": 0.1 } 
+        },
+        "name": "IA Agente (Redacción Icebreaker)",
+        "type": "n8n-nodes-base.openAi",
+        "position": [700, 300]
+      },
+      {
+        "parameters": { 
+          "operation": "append", 
+          "documentId": "ID_GOOGLE_SHEET", 
+          "sheetName": "Leads_Calificados" 
+        },
+        "name": "Google Sheets (Almacenamiento)",
+        "type": "n8n-nodes-base.googleSheets",
+        "position": [900, 300]
+      }
+    ],
+    "connections": {
+      "Trigger cada 5 min": { "main": [ [ { "node": "Google Maps API (Extracción Leads)", "type": "main", "index": 0 } ] ] },
+      "Google Maps API (Extracción Leads)": { "main": [ [ { "node": "HTTP Request (Scraping Web/Colores Corporativos)", "type": "main", "index": 0 } ] ] },
+      "HTTP Request (Scraping Web/Colores Corporativos)": { "main": [ [ { "node": "IA Agente (Redacción Icebreaker)", "type": "main", "index": 0 } ] ] },
+      "IA Agente (Redacción Icebreaker)": { "main": [ [ { "node": "Google Sheets (Almacenamiento)", "type": "main", "index": 0 } ] ] }
+    }
+  }
+]

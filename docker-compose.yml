@@ -1,0 +1,57 @@
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ayda_user
+      POSTGRES_PASSWORD: ayda_password
+      POSTGRES_DB: ayda_automation
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - ayda_network
+
+  redis:
+    image: redis:6-alpine
+    restart: always
+    networks:
+      - ayda_network
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=ayda_automation
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=ayda_user
+      - DB_POSTGRESDB_PASSWORD=ayda_password
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - QUEUE_BULL_REDIS_HOST=redis
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./data/n8n:/data/n8n
+    depends_on:
+      - db
+      - redis
+    networks:
+      - ayda_network
+
+networks:
+  ayda_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  n8n_data:
